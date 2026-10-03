@@ -1,0 +1,25 @@
+name: Youwei image
+on:
+  push:
+    branches: [youwei]
+    paths: [Dockerfile, '.github/workflows/youwei-release.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: write
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build fixed source revision
+        run: |
+          free -m
+          docker build --build-arg BUILD_HASH="$GITHUB_SHA" -t "ghcr.io/youweichen0208/youwei-webui:$GITHUB_SHA" .
+      - name: Publish immutable source tag
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker push "ghcr.io/youweichen0208/youwei-webui:$GITHUB_SHA"
