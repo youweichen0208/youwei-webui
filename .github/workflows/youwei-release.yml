@@ -1,9 +1,9 @@
 name: Youwei image
 on:
   push:
-    branches: [youwei]
+    branches: [develop]
   pull_request:
-    branches: [youwei]
+    branches: [develop]
   workflow_dispatch:
 permissions:
   contents: read
@@ -26,7 +26,7 @@ jobs:
             --label "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \
             -t "ghcr.io/youweichen0208/youwei-webui:$GITHUB_SHA" .
       - name: Publish immutable source tag
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/youwei'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/develop'
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
