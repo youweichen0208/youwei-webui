@@ -1,0 +1,33 @@
+name: Hermes workbench
+on:
+  push:
+    branches: [develop]
+    paths: ['backend/open_webui/utils/hermes.py', 'backend/open_webui/routers/hermes.py', 'backend/tests/hermes/**', 'src/lib/apis/hermes/**', 'src/lib/components/agent/**', 'src/routes/(app)/agent/**', 'src/routes/(app)/calendar/**', '.github/workflows/hermes-workbench.yml']
+  pull_request:
+    branches: [develop]
+permissions:
+  contents: read
+jobs:
+  bridge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r backend/tests/hermes/requirements.txt
+      - run: PYTHONPATH=backend python -m pytest -q backend/tests/hermes
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --legacy-peer-deps --no-audit
+      - run: npx vitest run src/lib/apis/hermes/index.test.ts
+      - run: npx vite build
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+          npm_package_version: '0.11.4'

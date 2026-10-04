@@ -2,6 +2,13 @@
 	import { onMount, getContext, tick } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
+	import { hermes } from '$lib/apis/hermes';
+	import { HERMES_CALENDAR, jobEvents } from '$lib/apis/hermes/calendar';
+	let hermesEnabled = false;
+	let hermesError = '';
+	let hermesEvents: CalendarEventModel[] = [];
+	$: displayEvents = [...events, ...hermesEvents];
+	$: displayIds = new Set([...visibleCalendarIds, HERMES_CALENDAR]);
 	import { WEBUI_NAME, mobile, showSidebar, user } from '$lib/stores';
 	import {
 		getCalendars,
@@ -94,6 +101,11 @@
 		try {
 			const { start, end } = getVisibleRange();
 			events = await getCalendarEvents(localStorage.token, start, end);
+			hermesEvents = []; hermesError = '';
+			try {
+				hermesEnabled = (await hermes('config')).enabled;
+				if (hermesEnabled) hermesEvents = jobEvents((await hermes('jobs?include_disabled=true')).jobs ?? [], $user?.id ?? '', start, end);
+			} catch { hermesError = 'Hermes 任务暂时无法读取'; }
 		} catch (err) {
 			toast.error(`${err}`);
 		}
@@ -136,6 +148,7 @@
 
 	function handleEventClick(e: CustomEvent<CalendarEventModel>) {
 		const evt = e.detail;
+		if (evt.meta?.hermes_job_id) { goto(`/agent/cron?job=${encodeURIComponent(evt.meta.hermes_job_id)}`); return; }
 		if (evt.meta?.automation_id) {
 			if (evt.meta?.chat_id) {
 				goto(`/c/${evt.meta.chat_id}`);
@@ -359,10 +372,12 @@
 
 			<!-- Calendar -->
 			<div class="flex-1 flex flex-col min-h-0">
-				<CalendarView
-					{events}
+				{#if hermesEnabled}<div class="px-4 text-xs text-gray-500">Hermes：显示最近一次与下一次运行 · <a href="/agent/cron">管理任务</a></div>{/if}
+			{#if hermesError}<div class="px-4 text-xs text-amber-700" role="status">{hermesError}</div>{/if}
+			<CalendarView
+					events={displayEvents}
 					{calendars}
-					{visibleCalendarIds}
+					visibleCalendarIds={displayIds}
 					bind:view
 					bind:currentDate
 					on:createEvent={handleCreateEvent}

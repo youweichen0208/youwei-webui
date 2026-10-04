@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AgentSidebarNav from '$lib/components/agent/SidebarNav.svelte';
 	import { toast } from 'svelte-sonner';
 	import { v4 as uuidv4 } from 'uuid';
 	import Sortable from 'sortablejs';
@@ -1297,6 +1298,8 @@
 							{/each}
 						</div>
 					</div>
+
+					<AgentSidebarNav />
 
 					{#if $visiblePinnedModels.length > 0}
 						<SidebarSection

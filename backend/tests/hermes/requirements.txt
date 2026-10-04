@@ -1,0 +1,7 @@
+# Small isolated bridge test environment; runtime versions match the upstream uv.lock.
+fastapi==0.136.3
+httpx==0.28.1
+pydantic==2.13.4
+typer==0.25.1
+uvicorn==0.51.0
+pytest==8.4.2

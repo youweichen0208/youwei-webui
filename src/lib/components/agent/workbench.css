@@ -1,0 +1,203 @@
+.agent-workbench {
+	width: 100%;
+	min-width: 0;
+	flex: 1;
+	--aw-surface: #fff;
+	--aw-subtle: #fafafa;
+	--aw-border: #ececef;
+	--aw-muted: #71717a;
+	--aw-text: #18181b;
+	color: var(--aw-text);
+	background: var(--aw-surface);
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	font-size: 14px;
+}
+.dark .agent-workbench {
+	--aw-surface: #171717;
+	--aw-subtle: #202020;
+	--aw-border: #343434;
+	--aw-muted: #a1a1aa;
+	--aw-text: #f4f4f5;
+}
+.agent-workbench .aw-header {
+	min-height: 56px;
+	border-bottom: 1px solid var(--aw-border);
+	padding: 12px 20px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+.agent-workbench .aw-pill {
+	font-size: 12px;
+	border: 1px solid var(--aw-border);
+	padding: 4px 12px;
+	border-radius: 999px;
+	white-space: nowrap;
+}
+.agent-workbench .aw-tabs {
+	display: flex;
+	gap: 6px;
+	padding: 10px 20px;
+	border-bottom: 1px solid var(--aw-border);
+	overflow: auto;
+}
+.agent-workbench .aw-tabs a {
+	padding: 6px 12px;
+	border-radius: 8px;
+	white-space: nowrap;
+}
+.agent-workbench .aw-tabs a[aria-current='page'] {
+	background: var(--aw-border);
+	font-weight: 600;
+}
+.agent-workbench .aw-body {
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+}
+.agent-workbench .aw-split {
+	display: flex;
+	height: 100%;
+	min-height: 0;
+}
+.agent-workbench .aw-main {
+	flex: 1;
+	min-width: 0;
+	padding: 24px 28px;
+	overflow: auto;
+}
+.agent-workbench .aw-aside {
+	width: 280px;
+	flex-shrink: 0;
+	padding: 24px 20px;
+	border-left: 1px solid var(--aw-border);
+	overflow: auto;
+}
+.agent-workbench .aw-list {
+	width: 340px;
+	flex-shrink: 0;
+	padding: 20px;
+	border-right: 1px solid var(--aw-border);
+	overflow: auto;
+}
+.agent-workbench .aw-card {
+	border: 1px solid var(--aw-border);
+	border-radius: 12px;
+	padding: 16px;
+	margin-bottom: 14px;
+}
+.agent-workbench .aw-muted {
+	color: var(--aw-muted);
+	font-size: 12px;
+}
+.agent-workbench .aw-label {
+	color: var(--aw-muted);
+	font-size: 12px;
+	display: block;
+	margin-bottom: 8px;
+}
+.agent-workbench .aw-title {
+	font-size: 20px;
+	font-weight: 600;
+	margin-bottom: 8px;
+}
+.agent-workbench .aw-btn {
+	border: 1px solid var(--aw-border);
+	border-radius: 8px;
+	padding: 7px 13px;
+	font-size: 13px;
+	white-space: nowrap;
+}
+.agent-workbench .aw-btn:hover:not(:disabled) {
+	background: var(--aw-subtle);
+}
+.agent-workbench .aw-primary {
+	color: var(--aw-surface);
+	background: var(--aw-text);
+	border-color: var(--aw-text);
+}
+.agent-workbench .aw-primary:hover:not(:disabled) {
+	opacity: 0.85;
+	background: var(--aw-text);
+}
+.agent-workbench button:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+.agent-workbench .aw-input {
+	width: 100%;
+	padding: 10px 12px;
+	border: 1px solid var(--aw-border);
+	border-radius: 8px;
+	background: var(--aw-surface);
+}
+.agent-workbench textarea {
+	resize: vertical;
+}
+.agent-workbench pre {
+	font-size: 12px;
+	line-height: 1.7;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+.agent-workbench .aw-error {
+	border: 1px solid #efb6af;
+	background: #fff4f2;
+	color: #a13227;
+	padding: 12px 16px;
+	border-radius: 8px;
+	margin: 12px 20px;
+}
+.agent-workbench .aw-empty {
+	text-align: center;
+	padding: 56px 24px;
+	color: var(--aw-muted);
+}
+.agent-workbench .aw-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.agent-workbench .aw-stack {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+.agent-workbench .aw-section {
+	margin-bottom: 24px;
+}
+.agent-workbench .aw-selected {
+	background: var(--aw-subtle);
+	outline: 1px solid var(--aw-border);
+}
+.agent-workbench :is(button, a, input, textarea, select):focus-visible {
+	outline: 2px solid #3b7dd8;
+	outline-offset: 3px;
+}
+@media (max-width: 900px) {
+	.agent-workbench .aw-aside {
+		display: none;
+	}
+	.agent-workbench .aw-list {
+		width: 260px;
+	}
+}
+@media (max-width: 640px) {
+	.agent-workbench .aw-split {
+		flex-direction: column;
+		height: auto;
+		min-height: 100%;
+	}
+	.agent-workbench .aw-list {
+		width: 100%;
+		max-height: 240px;
+		border-right: 0;
+		border-bottom: 1px solid var(--aw-border);
+	}
+	.agent-workbench .aw-main {
+		padding: 18px 16px;
+	}
+}
