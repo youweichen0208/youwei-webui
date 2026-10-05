@@ -1,3 +1,15 @@
+# youwei-webui
+
+个人 Open WebUI fork，负责登录、聊天历史与 Hermes 工作台。默认协作分支为 `develop`；保留上游许可及品牌要求。
+
+从 [文档索引](docs/README.md)、[开发指南](docs/DEVELOPMENT.md)、[交付状态](docs/STATUS.md) 开始；Agent 修改前阅读 [AGENTS.md](AGENTS.md)。
+
+四仓分工：本仓负责界面，[trading-assistant](https://github.com/youweichen0208/trading-assistant) 负责个人 Hermes，[trading_core](https://github.com/youweichen0208/trading_core) 提供金融 Python 包，[youwei-trading-agent](https://github.com/youweichen0208/youwei-trading-agent) 保留研究平台与部署登记。平台仓仍是必要组成部分。
+
+以下保留上游产品介绍；个人部署的开放能力与验收范围以本仓定制文档及平台登记为准。
+
+---
+
 # Open WebUI 👋
 
 ![GitHub stars](https://img.shields.io/github/stars/open-webui/open-webui?style=social)
