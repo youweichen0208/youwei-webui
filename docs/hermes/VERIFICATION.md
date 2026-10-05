@@ -19,3 +19,19 @@
 助手仓库另完成 25 个 pytest、Docker build，以及 `--network none --read-only` 容器中的只读技能文件读取。平台仓库完成 catalog 校验及可选 Compose 合并渲染，没有启动生产服务。
 
 没有调用真实付费模型，没有读写生产 profile、WebUI 数据库或 VM，没有验证实际消息平台投递。审批浏览器测试使用合成的安全事件，并未启用终端工具执行危险命令。没有验证完整技能编辑/自我改进审批、平台管理与运行环境切换；这些能力在本次接口中不开放。
+
+## 2026-10-05 侧栏按路由加载性能切片
+
+普通聊天仅请求工作台 `config`；进入 `/agent` 或子路由后才请求最近会话、技能与任务。在工作台内跳转不重复请求，离开时取消请求并清空详情；重新进入会重新加载。组件销毁取消配置和详情请求，过期响应不得回写。失败保留导航，不自动轮询或重试；`hermes` 增加兼容现有调用的可选第五参数 `AbortSignal`。
+
+隔离验证：先用组件测试复现 7 项失败，再实现；新增侧栏 Vitest 14 项通过，原有 API/SSE/Calendar Vitest 4 项通过，工作台 Python 20 项通过，Node 22 Vite production build 通过。`npm ci --ignore-scripts --legacy-peer-deps --no-audit` 验证锁文件；jsdom 仅用于 DOM 回归测试，既有包版本保持不变。完整 `npm run check` 仍为 7001 errors / 198 warnings（344 files），本次文件无错误，不能视为全仓类型检查通过。
+
+```bash
+npx svelte-kit sync
+npx vitest run --config vitest.sidebar.config.ts
+npx vitest run src/lib/apis/hermes/index.test.ts
+PYTHONPATH=backend .venv-workbench/bin/python -m pytest -q backend/tests/hermes
+NODE_OPTIONS=--max-old-space-size=8192 npx vite build
+```
+
+镜像、目标机、浏览器性能与生产切换另由平台登记；上述本地结果不代表线上性能目标或正式前向评估已通过。
