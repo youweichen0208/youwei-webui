@@ -5,6 +5,11 @@ on:
   pull_request:
     branches: [develop]
   workflow_dispatch:
+    inputs:
+      publish_candidate:
+        description: Publish the selected revision as an immutable candidate (does not deploy)
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -26,7 +31,7 @@ jobs:
             --label "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \
             -t "ghcr.io/youweichen0208/youwei-webui:$GITHUB_SHA" .
       - name: Publish immutable source tag
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/develop'
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/develop') || (github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/develop' || inputs.publish_candidate))
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

@@ -12,22 +12,54 @@
 		['/agent/cron', '定时任务', jobs],
 		['/agent/gateway', '消息网关', null]
 	];
-	onMount(async () => {
-		try {
-			enabled = (await hermes('config')).enabled;
-			if (!enabled) return;
+	onMount(() => {
+		const configRequest = new AbortController();
+		let detailsRequest: AbortController | undefined;
+		let inWorkbench = false;
+
+		const clearDetails = () => {
+			detailsRequest?.abort();
+			detailsRequest = undefined;
+			sessions = [];
+			skills = null;
+			jobs = null;
+		};
+		const loadDetails = async () => {
+			// Keep the controller after completion: one load per workbench visit,
+			// including failures. Route updates within the workbench do not retry.
+			if (!enabled || !inWorkbench || detailsRequest) return;
+			const request = new AbortController();
+			detailsRequest = request;
 			const results = await Promise.allSettled([
-				hermes('sessions?limit=5'),
-				hermes('skills'),
-				hermes('jobs')
+				hermes('sessions?limit=5', undefined, undefined, undefined, request.signal),
+				hermes('skills', undefined, undefined, undefined, request.signal),
+				hermes('jobs', undefined, undefined, undefined, request.signal)
 			]);
+			if (request.signal.aborted || detailsRequest !== request) return;
 			if (results[0].status === 'fulfilled') sessions = results[0].value.data ?? [];
 			if (results[1].status === 'fulfilled') skills = results[1].value.data?.length ?? 0;
 			if (results[2].status === 'fulfilled')
 				jobs = results[2].value.jobs?.filter((j: Job) => j.enabled).length ?? 0;
-		} catch {
-			/* Existing chat navigation remains available when Hermes is offline. */
-		}
+		};
+		const unsubscribe = page.subscribe(({ url }) => {
+			inWorkbench = url.pathname === '/agent' || url.pathname.startsWith('/agent/');
+			if (inWorkbench) void loadDetails();
+			else clearDetails();
+		});
+		void hermes('config', undefined, undefined, undefined, configRequest.signal)
+			.then((config) => {
+				if (configRequest.signal.aborted) return;
+				enabled = config.enabled;
+				void loadDetails();
+			})
+			.catch(() => {
+				/* Existing chat navigation remains available when Hermes is offline. */
+			});
+		return () => {
+			unsubscribe();
+			configRequest.abort();
+			clearDetails();
+		};
 	});
 </script>
 

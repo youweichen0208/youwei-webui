@@ -53,10 +53,12 @@ export async function hermes<T = any>(
 	path: string,
 	body?: unknown,
 	method?: string,
-	key?: string
+	key?: string,
+	signal?: AbortSignal
 ): Promise<T> {
 	const response = await fetch(`${WEBUI_API_BASE_URL}/hermes/${path}`, {
 		method: method ?? (body === undefined ? 'GET' : 'POST'),
+		signal,
 		headers: {
 			Authorization: `Bearer ${localStorage.token}`,
 			'Content-Type': 'application/json',
