@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Collapsible from '$lib/components/common/Collapsible.svelte';
+	import HermesTool from '../hermes/HermesTool.svelte';
 	import ToolCallDisplay from '$lib/components/common/ToolCallDisplay.svelte';
 	import TerminalOutputFile from './TerminalOutputFile.svelte';
 	import { resolveChatMessageToolCall } from '$lib/apis/chats';
@@ -71,7 +72,9 @@
 </script>
 
 {#each displayItems as displayItem (displayItem.id)}
-	{#if displayItem.type === 'message'}
+	{#if displayItem.type === 'hermes_tool'}
+		<HermesTool item={displayItem.item} result={displayItem.result} {done} />
+	{:else if displayItem.type === 'message'}
 		{#if renderMarkdown}
 			<div class="markdown-prose">
 				<Markdown

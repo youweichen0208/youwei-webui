@@ -1586,7 +1586,15 @@ async def generate_chat_completion(
 
     headers, cookies = await get_headers_and_cookies(request, url, key, api_config, metadata, user=user)
 
-    is_responses = api_config.get('api_type') == 'responses'
+    from open_webui.utils.hermes_chat import prepare_request, stream_response, nonstream_response
+
+    hermes_chat = api_config.get('hermes_chat') is True
+    is_responses = hermes_chat or api_config.get('api_type') == 'responses'
+    hermes_payload = None
+    if hermes_chat:
+        hermes_payload, scope_headers = prepare_request(payload, api_config, user.id, metadata)
+        headers = {k: v for k, v in headers.items() if not k.lower().startswith('x-hermes-')}
+        headers.update(scope_headers)
 
     # Explicit continuation keeps llama.cpp from echoing the prefill in streamed replies.
     if (
@@ -1634,6 +1642,8 @@ async def generate_chat_completion(
             request_url = f'{url}/responses'
         else:
             request_url = f'{url}/chat/completions'
+    if hermes_payload is not None:
+        payload = hermes_payload
     requested_model = payload.get('model')
     # For Chat Completions, strip image parts from multimodal tool messages
     # (Chat Completions doesn't support images in tool content).
@@ -1710,7 +1720,7 @@ async def generate_chat_completion(
 
             streaming = True
             return StreamingResponse(
-                stream_wrapper(r),
+                stream_response(stream_wrapper(r)) if hermes_chat else stream_wrapper(r),
                 status_code=r.status,
                 headers=_clean_proxy_headers(r.headers),
             )
@@ -1739,7 +1749,7 @@ async def generate_chat_completion(
 
             # Convert Responses API result to simple format
             if is_responses and isinstance(response, dict):
-                response = convert_responses_result(response)
+                response = nonstream_response(response) if hermes_chat else convert_responses_result(response)
 
             return response
     except Exception as e:
@@ -1908,6 +1918,10 @@ async def responses(
             idx = models[model_id]['urlIdx']
 
     url, key, api_config = await get_openai_connection(idx)
+
+    if api_config.get('hermes_chat') is True:
+        # Rich Hermes requests must pass the owner/branch-history adapter above.
+        raise HTTPException(403, 'Hermes 请使用聊天接口')
 
     payload['model'] = strip_provider_model_prefix(payload['model'], api_config.get('prefix_id'))
     body = JSONCodec.dumps(payload)
