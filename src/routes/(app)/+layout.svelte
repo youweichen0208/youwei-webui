@@ -80,11 +80,13 @@
 		}
 	};
 
-	const setModels = async () => {
+	const setModels = async (settingsReady: Promise<void>) => {
 		models.set(
 			await getModels(
 				localStorage.token,
-				$config?.features?.enable_direct_connections ? ($settings?.directConnections ?? null) : null
+				settingsReady.then(() =>
+					$config?.features?.enable_direct_connections ? ($settings?.directConnections ?? null) : null
+				)
 			)
 		);
 	};
@@ -220,13 +222,13 @@
 		}
 
 		clearChatInputStorage();
+		const settingsReady = setUserSettings();
 		try {
 			await Promise.all([
 				setBanners().catch((e) => console.error('Failed to load banners:', e)),
 				setTools().catch((e) => console.error('Failed to load tools:', e)),
-				setUserSettings(async () => {
-					await setModels().catch((e) => console.error('Failed to load models:', e));
-				})
+				settingsReady,
+				setModels(settingsReady).catch((e) => console.error('Failed to load models:', e))
 			]);
 		} catch (e) {
 			console.error('Failed to load user settings:', e);

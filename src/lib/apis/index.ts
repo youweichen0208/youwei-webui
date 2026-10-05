@@ -22,7 +22,7 @@ const OPENAPI_HTTP_METHODS = new Set([
 // the one for whom it was intended, and return answered.
 export const getModels = async (
 	token: string = '',
-	connections: object | null = null,
+	connections: object | null | Promise<object | null> = null,
 	base: boolean = false,
 	refresh: boolean = false
 ) => {
@@ -32,26 +32,32 @@ export const getModels = async (
 	}
 
 	let error = null;
-	const res = await fetch(
-		`${WEBUI_BASE_URL}/api/models${base ? '/base' : ''}?${searchParams.toString()}`,
-		{
-			method: 'GET',
-			headers: {
-				Accept: 'application/json',
-				'Content-Type': 'application/json',
-				...(token && { authorization: `Bearer ${token}` })
+	// Server models do not depend on interface settings. Attach both promises
+	// immediately so settings failures cannot become unhandled rejections.
+	const [res, resolvedConnections] = await Promise.all([
+		fetch(
+			`${WEBUI_BASE_URL}/api/models${base ? '/base' : ''}?${searchParams.toString()}`,
+			{
+				method: 'GET',
+				headers: {
+					Accept: 'application/json',
+					'Content-Type': 'application/json',
+					...(token && { authorization: `Bearer ${token}` })
+				}
 			}
-		}
-	)
-		.then(async (res) => {
-			if (!res.ok) throw await res.json();
-			return res.json();
-		})
-		.catch((err) => {
-			error = err;
-			console.error(err);
-			return null;
-		});
+		)
+			.then(async (res) => {
+				if (!res.ok) throw await res.json();
+				return res.json();
+			})
+			.catch((err) => {
+				error = err;
+				console.error(err);
+				return null;
+		}),
+		connections
+	]);
+	connections = resolvedConnections;
 
 	if (error) {
 		throw error;

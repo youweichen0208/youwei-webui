@@ -1,4 +1,5 @@
 <script>
+	import { loadInitialState } from '$lib/apis/startup';
 	import { io } from 'socket.io-client';
 	import { spring } from 'svelte/motion';
 	import { createPyodideWorker } from '$lib/pyodide/createPyodideWorker';
@@ -52,7 +53,7 @@
 	import 'tippy.js/dist/tippy.css';
 
 	import { executeToolServer, getBackendConfig, getModels, getVersion } from '$lib/apis';
-	import { getSessionUser, updateUserTimezone, userSignOut } from '$lib/apis/auths';
+	import { updateUserTimezone, userSignOut } from '$lib/apis/auths';
 	import { getAllTags } from '$lib/apis/chats';
 	import { chatCompletion } from '$lib/apis/openai';
 	import { isTemporaryChatId } from '$lib/utils/chatId';
@@ -1236,8 +1237,12 @@
 		});
 
 		let backendConfig = null;
+		let initialSession = null;
+		const initialToken = localStorage.token ?? null;
 		try {
-			backendConfig = await getBackendConfig();
+			const initialState = await loadInitialState(initialToken);
+			backendConfig = initialState.backendConfig;
+			initialSession = initialState.session;
 			console.log('Backend config:', backendConfig);
 		} catch (error) {
 			if (error?.authRedirect) {
@@ -1276,12 +1281,12 @@
 			if ($config) {
 				await setupSocket($config.features?.enable_websocket ?? true);
 
-				if (localStorage.token) {
+				if (localStorage.token && localStorage.token === initialToken) {
 					// Get Session User Info
-					const sessionUser = await getSessionUser(localStorage.token).catch((error) => {
-						toast.error(`${error}`);
-						return null;
-					});
+					const sessionUser = initialSession?.user;
+					if (initialSession?.error) {
+						toast.error(`${initialSession.error}`);
+					}
 
 					if (sessionUser) {
 						await user.set(sessionUser);
