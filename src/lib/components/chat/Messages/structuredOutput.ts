@@ -43,6 +43,7 @@ export type OutputDetailToken = {
 };
 
 export type OutputDisplayItem =
+	| { type: 'hermes_tool'; id: string; item: OutputItem; result?: OutputItem }
 	| {
 			type: 'message';
 			id: string;
@@ -346,6 +347,13 @@ export function buildOutputDisplayItems(output: OutputItem[] = []): OutputDispla
 	const currentDetailTokens: OutputDetailToken[] = [];
 	const toolOutputByCallId: Record<string, OutputItem> = {};
 	const toolCallByCallId: Record<string, OutputItem> = {};
+	const hermesResults = new Map(
+		output.filter((i) => i?.type === 'hermes:tool_result').map((i) => [i.call_id, i])
+	);
+	const hermesCalls = new Map(
+		output.filter((i) => i?.type === 'hermes:tool_call').map((i) => [i.call_id, i])
+	);
+	const shownHermes = new Set<string>();
 
 	for (const item of output) {
 		if (item?.type === 'function_call_output' && item.call_id) {
@@ -374,6 +382,19 @@ export function buildOutputDisplayItems(output: OutputItem[] = []): OutputDispla
 
 	output.forEach((item, index) => {
 		if (!item) {
+			return;
+		}
+		if (item.type === 'hermes:tool_result') return;
+		if (item.type === 'hermes:tool_call') {
+			if (!item.call_id || shownHermes.has(item.call_id)) return;
+			shownHermes.add(item.call_id);
+			flushDetails();
+			displayItems.push({
+				type: 'hermes_tool',
+				id: `hermes-${item.call_id}`,
+				item: hermesCalls.get(item.call_id) ?? item,
+				result: hermesResults.get(item.call_id)
+			});
 			return;
 		}
 
