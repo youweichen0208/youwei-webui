@@ -64,3 +64,47 @@ it('restores metrics with missing reasons without fetching or trusting HTML', as
 	expect(target.querySelector('img')).toBeNull();
 	expect(fetch).not.toHaveBeenCalled();
 });
+
+it('renders combined analysis and its distinct warmup window after history restore', async () => {
+	const metrics = Object.fromEntries(
+		[
+			'sma20',
+			'sma50',
+			'sma200',
+			'rsi14',
+			'period_return',
+			'annualized_volatility',
+			'max_drawdown'
+		].map((k) => [k, { value: 1, reason: null }])
+	);
+	const data = {
+		symbol: 'AAPL',
+		source: 'Yahoo Finance',
+		fetched_at: '2026-10-06T00:00:00Z',
+		pit: false,
+		warnings: [],
+		currency: 'USD',
+		adjustment: 'Adjusted closes',
+		period: { start: '2026-10-01', end_exclusive: '2026-10-03' },
+		rows: [
+			{ date: '2026-10-02', open: 1, high: 1, low: 1, close: 1, adjusted_close: 1, volume: 1 }
+		],
+		sample_size: 1,
+		metrics,
+		indicator_history: {
+			start: '2025-09-01',
+			first: '2025-09-02',
+			last: '2026-10-02',
+			end_exclusive: '2026-10-03',
+			sample_size: 275
+		}
+	};
+	const target = await render({
+		item: { name: 'trading_analysis', status: 'completed' },
+		result: { output: [{ text: JSON.stringify(data) }] },
+		done: true
+	});
+	expect(target.textContent).toContain('SMA 200');
+	expect(target.textContent).toContain('275 个历史样本');
+	expect(target.textContent).toContain('数据表 · 1 行');
+});

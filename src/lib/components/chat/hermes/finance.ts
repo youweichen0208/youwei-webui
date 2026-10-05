@@ -25,7 +25,16 @@ type Base = {
 	period: Record<string, string | null>;
 };
 export type FinanceCard =
-	| { kind: 'prices'; data: Base & { rows: PriceRow[]; currency: string; adjustment: string } }
+	| {
+			kind: 'prices';
+			data: Base & {
+				rows: PriceRow[];
+				currency: string;
+				adjustment: string;
+				metrics?: Record<string, Metric>;
+				indicator_history?: { first: string; last: string; sample_size: number };
+			};
+	  }
 	| { kind: 'indicators'; data: Base & { metrics: Record<string, Metric>; sample_size: number } }
 	| {
 			kind: 'financials';
@@ -59,7 +68,12 @@ const indicators = [
 	'annualized_volatility',
 	'max_drawdown'
 ];
-const tools = new Set(['trading_price_history', 'trading_indicators', 'trading_financials']);
+const tools = new Set([
+	'trading_analysis',
+	'trading_price_history',
+	'trading_indicators',
+	'trading_financials'
+]);
 const object = (v: unknown): v is Record<string, any> =>
 	!!v && typeof v === 'object' && !Array.isArray(v);
 const date = (v: unknown): v is string =>
@@ -113,7 +127,7 @@ export function parseFinance(tool: string, text: string): FinanceCard | null {
 			!object(d.period)
 		)
 			return invalid;
-		if (tool === 'trading_price_history') {
+		if (tool === 'trading_price_history' || tool === 'trading_analysis') {
 			if (
 				d.currency !== 'USD' ||
 				typeof d.adjustment !== 'string' ||
@@ -131,6 +145,25 @@ export function parseFinance(tool: string, text: string): FinanceCard | null {
 						(i === 0 || r.date > d.rows[i - 1].date) &&
 						['open', 'high', 'low', 'close', 'adjusted_close', 'volume'].every((k) => number(r[k]))
 				)
+			)
+				return invalid;
+			if (
+				tool === 'trading_analysis' &&
+				(!object(d.metrics) ||
+					!indicators.every((k) => metric(d.metrics[k])) ||
+					d.sample_size !== d.rows.length ||
+					!object(d.indicator_history) ||
+					!date(d.indicator_history.start) ||
+					!date(d.indicator_history.first) ||
+					!date(d.indicator_history.last) ||
+					d.indicator_history.start > d.period.start ||
+					d.indicator_history.first < d.indicator_history.start ||
+					d.indicator_history.first > d.rows[0].date ||
+					d.indicator_history.last !== d.rows[d.rows.length - 1].date ||
+					d.indicator_history.end_exclusive !== d.period.end_exclusive ||
+					!Number.isInteger(d.indicator_history.sample_size) ||
+					d.indicator_history.sample_size < d.sample_size ||
+					d.indicator_history.sample_size > 1830)
 			)
 				return invalid;
 			return { kind: 'prices', data: d as Extract<FinanceCard, { kind: 'prices' }>['data'] };
