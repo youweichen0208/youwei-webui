@@ -85,7 +85,7 @@ describe('model loading with fresh settings', () => {
 			OPENAI_API_KEYS: ['fixture-key'],
 			OPENAI_API_CONFIGS: { 0: { enable: true } }
 		});
-		expect((await pending).map((model) => model.id)).toEqual(['server', 'direct']);
+		expect((await pending).map((model: { id: string }) => model.id)).toEqual(['server', 'direct']);
 		expect(getOpenAIModelsDirect).toHaveBeenCalledWith('https://fixture.invalid', 'fixture-key');
 	});
 	it('keeps direct connections disabled when fresh configuration disallows them', async () => {

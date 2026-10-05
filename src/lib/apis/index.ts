@@ -54,7 +54,7 @@ export const getModels = async (
 				error = err;
 				console.error(err);
 				return null;
-		}),
+			}),
 		connections
 	]);
 	connections = resolvedConnections;
