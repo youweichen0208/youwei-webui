@@ -181,3 +181,12 @@ it('keeps warmed indicators separate from the requested analysis period', () => 
 		)?.kind
 	).toBe('error');
 });
+
+it('rejects unvalidated optional analysis fields even on legacy prices', () => {
+	expect(
+		parseFinance(
+			'trading_price_history',
+			JSON.stringify({ ...prices, metrics: 'bad', indicator_history: { first: 'bad' } })
+		)?.kind
+	).toBe('error');
+});

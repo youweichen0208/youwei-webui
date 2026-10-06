@@ -148,7 +148,9 @@ export function parseFinance(tool: string, text: string): FinanceCard | null {
 			)
 				return invalid;
 			if (
-				tool === 'trading_analysis' &&
+				(tool === 'trading_analysis' ||
+					d.metrics !== undefined ||
+					d.indicator_history !== undefined) &&
 				(!object(d.metrics) ||
 					!indicators.every((k) => metric(d.metrics[k])) ||
 					d.sample_size !== d.rows.length ||
