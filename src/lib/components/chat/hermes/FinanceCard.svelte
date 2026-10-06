@@ -38,6 +38,19 @@
 			</p>
 			<PriceChart rows={card.data.rows} {field} />
 			<p class="mt-2 text-xs text-gray-500">{card.data.adjustment}</p>
+			{#if card.data.metrics && card.data.indicator_history}
+				<p class="my-3 text-xs text-gray-500">
+					收益、回撤和波动率对应上方查询区间；SMA / RSI 使用 {card.data.indicator_history.first} 至 {card
+						.data.indicator_history.last} 的 {card.data.indicator_history.sample_size} 个历史样本。
+				</p>
+				<dl class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+					{#each Object.entries(card.data.metrics) as [name, m]}<div>
+							<dt class="text-xs text-gray-500">{metricNames[name] ?? name}</dt>
+							<dd class="mt-1 font-medium tabular-nums">{formatValue(m.value, name)}</dd>
+							{#if m.reason}<p class="break-words text-xs text-gray-500">{m.reason}</p>{/if}
+						</div>{/each}
+				</dl>
+			{/if}
 			<details class="mt-3 text-sm">
 				<summary class="cursor-pointer">数据表 · {card.data.rows.length} 行</summary>
 				<div class="overflow-x-auto">

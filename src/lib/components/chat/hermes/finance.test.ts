@@ -138,3 +138,58 @@ describe('verified financial data', () => {
 		expect(parseFinance('trading_price_history', 'x'.repeat(512 * 1024 + 1))?.kind).toBe('error');
 	});
 });
+
+it('keeps warmed indicators separate from the requested analysis period', () => {
+	const metrics = Object.fromEntries(
+		[
+			'sma20',
+			'sma50',
+			'sma200',
+			'rsi14',
+			'period_return',
+			'annualized_volatility',
+			'max_drawdown'
+		].map((k) => [k, { value: 1, reason: null }])
+	);
+	const analysis = {
+		...prices,
+		metrics,
+		sample_size: 2,
+		indicator_history: {
+			start: '2025-09-01',
+			end_exclusive: '2026-10-03',
+			first: '2025-09-02',
+			last: '2026-10-02',
+			sample_size: 275
+		}
+	};
+	const card = parseFinance('trading_analysis', JSON.stringify(analysis));
+	expect(card?.kind).toBe('prices');
+	expect(
+		parseFinance(
+			'trading_analysis',
+			JSON.stringify({ ...analysis, metrics: { ...metrics, unexpected: null } })
+		)?.kind
+	).toBe('error');
+	expect(
+		parseFinance('trading_analysis', JSON.stringify({ ...analysis, sample_size: 275 }))?.kind
+	).toBe('error');
+	expect(
+		parseFinance(
+			'trading_analysis',
+			JSON.stringify({
+				...analysis,
+				indicator_history: { ...analysis.indicator_history, end_exclusive: '2026-10-04' }
+			})
+		)?.kind
+	).toBe('error');
+});
+
+it('rejects unvalidated optional analysis fields even on legacy prices', () => {
+	expect(
+		parseFinance(
+			'trading_price_history',
+			JSON.stringify({ ...prices, metrics: 'bad', indicator_history: { first: 'bad' } })
+		)?.kind
+	).toBe('error');
+});

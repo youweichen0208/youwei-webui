@@ -12,3 +12,5 @@
 | [金融上线记录](https://github.com/youweichen0208/youwei-trading-agent/blob/develop/docs/ops/trading-core-20261005.md) | 保持 WebUI 镜像，验证鉴权、工作台和助手工具 |
 
 源码 HEAD 与生产镜像可能不同，具体身份查部署登记。历史类型检查失败仍按原记录保留；mock 验收不代表真实付费模型选择工具的质量，也不代表正式前向评估通过。本次补齐文档不改变服务或部署状态。
+
+2026-10-06 并行研究候选：`trading_analysis` 在同一卡片展示查询区间日线和指标，并标明 SMA/RSI 的独立预热历史。前端解析/组件回归及工作台 Python 验证、Vite 构建通过。部署身份和跨服务证据由平台登记；未执行真实付费模型验收。
