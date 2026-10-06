@@ -152,6 +152,7 @@ export function parseFinance(tool: string, text: string): FinanceCard | null {
 					d.metrics !== undefined ||
 					d.indicator_history !== undefined) &&
 				(!object(d.metrics) ||
+					Object.keys(d.metrics).length !== indicators.length ||
 					!indicators.every((k) => metric(d.metrics[k])) ||
 					d.sample_size !== d.rows.length ||
 					!object(d.indicator_history) ||
@@ -173,6 +174,7 @@ export function parseFinance(tool: string, text: string): FinanceCard | null {
 		if (tool === 'trading_indicators') {
 			if (
 				!object(d.metrics) ||
+				Object.keys(d.metrics).length !== indicators.length ||
 				!indicators.every((k) => metric(d.metrics[k])) ||
 				!Number.isInteger(d.sample_size) ||
 				d.sample_size < 0 ||

@@ -165,9 +165,12 @@ it('keeps warmed indicators separate from the requested analysis period', () => 
 	};
 	const card = parseFinance('trading_analysis', JSON.stringify(analysis));
 	expect(card?.kind).toBe('prices');
-	expect(parseFinance('trading_analysis', JSON.stringify({ ...analysis, metrics: {} }))?.kind).toBe(
-		'error'
-	);
+	expect(
+		parseFinance(
+			'trading_analysis',
+			JSON.stringify({ ...analysis, metrics: { ...metrics, unexpected: null } })
+		)?.kind
+	).toBe('error');
 	expect(
 		parseFinance('trading_analysis', JSON.stringify({ ...analysis, sample_size: 275 }))?.kind
 	).toBe('error');
